@@ -1,4 +1,6 @@
-﻿namespace ApiAssignment.Models
+﻿using System.ComponentModel;
+
+namespace ApiAssignment.Models
 {
     public enum PlotEnum : int
     {

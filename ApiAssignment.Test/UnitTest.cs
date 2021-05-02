@@ -42,7 +42,7 @@ namespace ApiAssignment.Test
 
     public class TestClient : IClient
     {
-        public Task<string> GetMovieAsync(Request request)
+        public Task<string> GetMovieAsync(MovieRequestDTO request)
         {
             return Task.Run(() => string.Empty);
         }

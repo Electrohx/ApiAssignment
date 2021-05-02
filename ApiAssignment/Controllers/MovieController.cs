@@ -16,16 +16,31 @@ namespace ApiAssignment
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] Request req)
+        public async Task<IActionResult> Get([FromQuery] MovieRequestDTO req)
         {
-            if (string.IsNullOrEmpty(req.MovieTitle))
+            if (string.IsNullOrEmpty(req.Title))
             {
-                return BadRequest("omdbapi will return error if not title is included");
+                return BadRequest("omdbapi will return error if title is not included");
             }
 
-            var apiResponse = await client.GetMovieAsync(req);
+            return await GetMovie(req);
+        }
 
-            return Ok(apiResponse);
+        private async Task<IActionResult> GetMovie(MovieRequestDTO req)
+        {
+            try
+            {
+                var apiResponse = await client.GetMovieAsync(req);
+                return Ok(apiResponse);
+            }
+            catch (System.ArgumentException ae)
+            {
+                return BadRequest(ae.Message);
+            }
+            catch (System.Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

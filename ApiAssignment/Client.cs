@@ -2,6 +2,7 @@
 using ApiAssignment.Options;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace ApiAssignment
 {
     public interface IClient
     {
-        Task<string> GetMovieAsync(Request request);
+        Task<string> GetMovieAsync(MovieRequestDTO request);
     }
 
     public class Client : IClient
@@ -22,9 +23,14 @@ namespace ApiAssignment
             this.options = options;
         }
 
-        public async Task<string> GetMovieAsync(Request request)
+        public async Task<string> GetMovieAsync(MovieRequestDTO request)
         {
             var queryParams = GetParams(request);
+
+            if (!queryParams.ContainsKey("apikey"))
+            {
+                throw new ArgumentException("apikey was not defined");
+            }
 
             var url = QueryHelpers.AddQueryString("http://www.omdbapi.com/", queryParams);
             string apiResponse;
@@ -38,7 +44,7 @@ namespace ApiAssignment
             return apiResponse;
         }
 
-        private Dictionary<string, string> GetParams(Request re)
+        private Dictionary<string, string> GetParams(MovieRequestDTO re)
         {
             var queryParams = new Dictionary<string, string>();
 
@@ -46,19 +52,19 @@ namespace ApiAssignment
 
             //queryParams.Add("r", "json");
 
-            if (!string.IsNullOrEmpty(re.MovieTitle))
+            if (!string.IsNullOrEmpty(re.Title))
             {
-                queryParams.Add("t", re.MovieTitle);
+                queryParams.Add("t", re.Title);
             }
 
-            if (re.MovieYear.HasValue)
+            if (re.Year.HasValue)
             {
-                queryParams.Add("y", re.MovieYear.Value.ToString());
+                queryParams.Add("y", re.Year.Value.ToString());
             }
 
-            if (re.MoviePlot.HasValue)
+            if (re.Plot.HasValue)
             {
-                queryParams.Add("plot", re.MoviePlot.Value.ToString());
+                queryParams.Add("plot", re.Plot.Value.ToString());
             }
 
             return queryParams;

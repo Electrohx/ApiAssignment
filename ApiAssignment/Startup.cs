@@ -1,15 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.OpenApi.Models;
+
 
 namespace ApiAssignment
 {
@@ -28,6 +23,16 @@ namespace ApiAssignment
             services.AddControllers();
             services.AddOptions<Options.ApiAssignmentOptions>().Configure<IConfiguration>((settings, conf) => { conf.Bind(settings); });
             services.AddSingleton<IClient, Client>();
+
+            services.AddMvc();
+            services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Api assignment",
+                    Version = "v1"
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,6 +42,12 @@ namespace ApiAssignment
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(o =>
+            {
+                o.SwaggerEndpoint("v1/swagger.json", "ApiAssignment");
+            });
 
             app.UseHttpsRedirection();
 
