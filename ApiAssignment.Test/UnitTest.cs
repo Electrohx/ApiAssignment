@@ -1,8 +1,6 @@
 using ApiAssignment.Models;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
