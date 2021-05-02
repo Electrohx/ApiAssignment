@@ -22,8 +22,8 @@ namespace ApiAssignment.Test
         }
 
         [Theory]
-        [InlineData("/movie?MovieTitle=titanic")]
-        [InlineData("/movie?MovieTitle=titanic&plot=full")]
+        [InlineData("/movie?Title=titanic")]
+        [InlineData("/movie?Title=titanic&Plot=full")]
         public async Task GetMovieShouldReturnOk(string url)
         {
             var waf = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder =>

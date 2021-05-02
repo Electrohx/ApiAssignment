@@ -25,7 +25,7 @@ namespace ApiAssignment
 
         public async Task<string> GetMovieAsync(MovieRequestDTO request)
         {
-            var queryParams = GetParams(request);
+            var queryParams = GetParameters(request);
 
             if (!queryParams.ContainsKey("apikey"))
             {
@@ -44,12 +44,13 @@ namespace ApiAssignment
             return apiResponse;
         }
 
-        private Dictionary<string, string> GetParams(MovieRequestDTO re)
+        private Dictionary<string, string> GetParameters(MovieRequestDTO re)
         {
             var queryParams = new Dictionary<string, string>();
 
             queryParams.Add("apikey", options.Value.ApiKey);
 
+            //Param to determine if the result from the external API should be in json or xml
             //queryParams.Add("r", "json");
 
             if (!string.IsNullOrEmpty(re.Title))
