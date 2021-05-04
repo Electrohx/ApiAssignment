@@ -1,6 +1,7 @@
 using ApiAssignment.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using Xunit;
@@ -34,7 +35,14 @@ namespace ApiAssignment.Test
         [InlineData("/movie?Title=Titanic&Plot=full")]
         public async Task GetMovieWithTestClientShouldReturnOk(string url)
         {
-            var client = GetClient(true);
+            var client = new WebApplicationFactory<Startup>()
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IClient, JsonClient>();
+                    });
+                }).CreateClient();
 
             var res = await client.GetAsync(url);
 
@@ -46,35 +54,64 @@ namespace ApiAssignment.Test
         [InlineData("/movie?Title=NotTitanic&Year=1911")]
         public async Task GetMovieWithTestClientShouldReturnNotFound(string url)
         {
-            var client = GetClient(true);
+            var client = new WebApplicationFactory<Startup>()
+                .WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IClient, NotFoundClient>();
+                    });
+                }).CreateClient();
 
             var res = await client.GetAsync(url);
 
             Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
         }
 
-        private static System.Net.Http.HttpClient GetClient(bool mockedClient = false)
+        [Fact]
+        public async Task GetMovieShouldReturnBadRequestWhenClientThrowsException()
         {
-            var waf = new WebApplicationFactory<Startup>();
-
-            return mockedClient ? 
-                waf.WithWebHostBuilder(builder =>
+            var client = new WebApplicationFactory<Startup>()
+                .WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureServices(services =>
                     {
-                        services.AddSingleton<IClient, TestClient>();
+                        services.AddSingleton<IClient, ArgumentExceptionClient>();
                     });
-                }).CreateClient()
-                :
-                waf.CreateClient();
+                }).CreateClient();
+
+            var res = await client.GetAsync("/movie?Title=title");
+
+            Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+        }
+
+        private static System.Net.Http.HttpClient GetClient()
+        {
+            return new WebApplicationFactory<Startup>().CreateClient();
         }
     }
 
-    public class TestClient : IClient
+    public class ArgumentExceptionClient : IClient
     {
         public Task<string> GetMovieAsync(MovieRequestDTO request)
         {
-            return request.Title.ToLower() == "titanic" ? Task.Run(() => "{\"Title\":\"Titanic\"}") : Task.Run(() => "Movie not found!");
+            throw new ArgumentException();
+        }
+    }
+
+    public class JsonClient : IClient
+    {
+        public Task<string> GetMovieAsync(MovieRequestDTO request)
+        {
+            return Task.Run(() => "{\"Title\":\"Titanic\"}");
+        }
+    }
+
+    public class NotFoundClient : IClient
+    {
+        public Task<string> GetMovieAsync(MovieRequestDTO request)
+        {
+            return Task.Run(() => "Movie not found!");
         }
     }
 }

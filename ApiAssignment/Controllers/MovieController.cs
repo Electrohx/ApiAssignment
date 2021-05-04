@@ -33,11 +33,14 @@ namespace ApiAssignment
                     return NotFound();
                 }
 
-                return Ok(JsonConvert.DeserializeObject<MovieResponseDTO>(apiResponse));
-            }
-            catch (System.ArgumentException ae)
-            {
-                return BadRequest(ae.Message);
+                var responseDto = JsonConvert.DeserializeObject<MovieResponseDTO>(apiResponse);
+
+                if (responseDto == null)
+                {
+                    return BadRequest("Something went wrong with the request");
+                }
+
+                return Ok(responseDto);
             }
             catch (System.Exception e)
             {
