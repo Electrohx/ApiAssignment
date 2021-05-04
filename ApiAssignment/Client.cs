@@ -50,9 +50,6 @@ namespace ApiAssignment
 
             queryParams.Add("apikey", options.Value.ApiKey);
 
-            //Param to determine if the result from the external API should be in json or xml
-            //queryParams.Add("r", "json");
-
             if (!string.IsNullOrEmpty(re.Title))
             {
                 queryParams.Add("t", re.Title);

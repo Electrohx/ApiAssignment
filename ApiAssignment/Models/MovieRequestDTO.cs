@@ -5,6 +5,7 @@ namespace ApiAssignment.Models
 {
     public class MovieRequestDTO : IValidatableObject
     {
+        [Required]
         public string Title { get; set; }
         public int? Year { get; set; }
         public PlotEnum? Plot { get; set; }
@@ -16,5 +17,11 @@ namespace ApiAssignment.Models
                 :
                 new List<ValidationResult>();
         }
+    }
+
+    public enum PlotEnum : int
+    {
+        @short = 0,
+        full = 1
     }
 }

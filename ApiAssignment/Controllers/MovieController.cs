@@ -1,5 +1,6 @@
 ﻿using ApiAssignment.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 
 namespace ApiAssignment
@@ -18,11 +19,6 @@ namespace ApiAssignment
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] MovieRequestDTO req)
         {
-            if (string.IsNullOrEmpty(req.Title))
-            {
-                return BadRequest("omdbapi will return error if title is not included");
-            }
-
             return await GetMovie(req);
         }
 
@@ -31,7 +27,13 @@ namespace ApiAssignment
             try
             {
                 var apiResponse = await client.GetMovieAsync(req);
-                return Ok(apiResponse);
+
+                if (apiResponse.Contains("Movie not found!"))
+                {
+                    return NotFound();
+                }
+
+                return Ok(JsonConvert.DeserializeObject<MovieResponseDTO>(apiResponse));
             }
             catch (System.ArgumentException ae)
             {
