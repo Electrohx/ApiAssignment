@@ -12,29 +12,61 @@ namespace ApiAssignment.Test
         [Fact]
         public async Task GetMovieShouldReturnBadRequest()
         {
-            var client = new WebApplicationFactory<Startup>().CreateClient();
+            System.Net.Http.HttpClient client = GetClient();
 
             var res = await client.GetAsync("/movie");
 
             Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
         }
 
-        [Theory]
-        [InlineData("/movie?Title=titanic")]
-        [InlineData("/movie?Title=titanic&Plot=full")]
-        public async Task GetMovieShouldReturnOk(string url)
+        [Fact]
+        public async Task GetMovieShouldReturnNotFound()
         {
-            var waf = new WebApplicationFactory<Startup>().WithWebHostBuilder(builder =>
-            {
-                builder.ConfigureServices(services =>
-                {
-                    services.AddSingleton<IClient, TestClient>();
-                });
-            });
+            System.Net.Http.HttpClient client = GetClient();
 
-            var res = await waf.CreateClient().GetAsync(url);
+            var res = await client.GetAsync("/movie?Title=ThisIsNotAValidTitle");
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("/movie?Title=Titanic")]
+        [InlineData("/movie?Title=Titanic&Plot=full")]
+        public async Task GetMovieWithTestClientShouldReturnOk(string url)
+        {
+            var client = GetClient(true);
+
+            var res = await client.GetAsync(url);
 
             Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("/movie?Title=NotTitanic")]
+        [InlineData("/movie?Title=NotTitanic&Year=1911")]
+        public async Task GetMovieWithTestClientShouldReturnNotFound(string url)
+        {
+            var client = GetClient(true);
+
+            var res = await client.GetAsync(url);
+
+            Assert.Equal(HttpStatusCode.NotFound, res.StatusCode);
+        }
+
+        private static System.Net.Http.HttpClient GetClient(bool mockedClient = false)
+        {
+            var waf = new WebApplicationFactory<Startup>();
+
+            return mockedClient ? 
+                waf.WithWebHostBuilder(builder =>
+                {
+                    builder.ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IClient, TestClient>();
+                    });
+                }).CreateClient()
+                :
+                waf.CreateClient();
         }
     }
 
@@ -42,7 +74,7 @@ namespace ApiAssignment.Test
     {
         public Task<string> GetMovieAsync(MovieRequestDTO request)
         {
-            return Task.Run(() => string.Empty);
+            return request.Title.ToLower() == "titanic" ? Task.Run(() => "{\"Title\":\"Titanic\"}") : Task.Run(() => "Movie not found!");
         }
     }
 }
