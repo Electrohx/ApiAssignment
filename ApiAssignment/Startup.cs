@@ -23,6 +23,7 @@ namespace ApiAssignment
             services.AddControllers().AddXmlDataContractSerializerFormatters();
             services.AddOptions<Options.ApiAssignmentOptions>().Configure<IConfiguration>((settings, conf) => { conf.Bind(settings); });
             services.AddSingleton<IClient, Client>();
+            services.AddHttpClient();
 
             services.AddMvc();
             services.AddSwaggerGen(s =>

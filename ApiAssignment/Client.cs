@@ -17,10 +17,12 @@ namespace ApiAssignment
     public class Client : IClient
     {
         private readonly IOptions<ApiAssignmentOptions> options;
+        private readonly HttpClient client;
 
-        public Client(IOptions<ApiAssignmentOptions> options)
+        public Client(IOptions<ApiAssignmentOptions> options, IHttpClientFactory clientFactory)
         {
             this.options = options;
+            this.client = clientFactory.CreateClient();
         }
 
         public async Task<string> GetMovieAsync(MovieRequestDTO request)
@@ -33,15 +35,17 @@ namespace ApiAssignment
             }
 
             var url = QueryHelpers.AddQueryString("http://www.omdbapi.com/", queryParams);
-            string apiResponse;
 
-            using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync(url))
+            var respons = await client.GetAsync(url);
+            
+            if (respons.IsSuccessStatusCode)
             {
-                apiResponse = await response.Content.ReadAsStringAsync();
+                return respons.Content.ReadAsStringAsync()?.Result;
             }
-
-            return apiResponse;
+            else
+            {
+                return string.Empty;
+            }
         }
 
         private Dictionary<string, string> GetParameters(MovieRequestDTO re)
